@@ -1,0 +1,7 @@
+worker_id,worker_division,worker_numbers,number_hour_per_workers_per_year,costs_per_worker_per_hour
+SSSS,Senior Account,2,1720,50
+FFFF,Junior Account,2,1720,20
+DDDD,Creativi,4,1720,30
+KKK,New Business,1,1720,35
+RRR,Concorsi,1,1720,25
+
