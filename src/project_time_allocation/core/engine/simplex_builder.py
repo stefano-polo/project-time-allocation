@@ -17,7 +17,7 @@ class LinearCoefficients:
             )
 
     @property
-    def linear_coefficients(self) -> np.ndarray:
+    def value(self) -> np.ndarray:
         return self._linear_coefficients
 
 
@@ -40,7 +40,7 @@ class InequalityMatrixConstraint:
                 ].worker_id_hours[worker_id]["number_hours"]
 
     @property
-    def inequality_matrix_constraint(self) -> np.ndarray:
+    def value(self) -> np.ndarray:
         return self._inequality_matrix_constraint
 
 
@@ -58,5 +58,5 @@ class InequalityVectorConstraint:
             ].total_available_hour
 
     @property
-    def inequality_vector_constraint(self) -> np.ndarray:
+    def value(self) -> np.ndarray:
         return self._inequality_vector_constraint

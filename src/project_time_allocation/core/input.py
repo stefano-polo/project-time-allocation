@@ -1,7 +1,7 @@
 import os
 from csv import DictReader
 from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from project_time_allocation.core.engine.objects import Worker
 from project_time_allocation.core.schemas.project import (
@@ -40,7 +40,7 @@ def load_project_return_file(
 
 def load_project_hour_file(
     file_name: str, folder_name: Optional[Path] = None
-) -> Dict[str, Dict[str, Union[int, str, float]]]:
+) -> Dict[str, List[Dict[str, Dict[str, Union[int, str]]]]]:
     if folder_name is not None:
         path = folder_name.joinpath(folder_name).joinpath(file_name)
     else:
@@ -69,7 +69,7 @@ def load_project_hour_file(
 
 def load_worker_file(
     file_name: str, folder_name: Optional[Path] = None
-) -> Dict[str, Dict[str, Union[int, str, float]]]:
+) -> Dict[str, Worker]:
     if folder_name is not None:
         path = folder_name.joinpath(folder_name).joinpath(file_name)
     else:
