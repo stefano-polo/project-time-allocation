@@ -1,11 +1,6 @@
 from pytest import fixture
 import numpy as np
 
-from project_time_allocation.core.engine.loss import (
-    ConstraintChecker,
-    ConstraintValues,
-    NegLossFunction,
-)
 from project_time_allocation.core.engine.objects import Project, Worker
 from project_time_allocation.core.engine.simplex_builder import (
     InequalityMatrixConstraint,
@@ -98,33 +93,25 @@ def fixture_map_wrk_id_index(senior, junior, creative):
     return {senior.worker_id: 0, junior.worker_id: 1, creative.worker_id: 2}
 
 
-def test_negative_loss(projects, map_prj_id_index):
+def test_linear_coeff(projects, map_prj_id_index):
     lin_coeff = LinearCoefficients(projects=projects, map_id_index=map_prj_id_index)
-    loss = NegLossFunction(lin_coeff=lin_coeff)
-    assert loss.value(strategy=STRATEGY) == 10 * (100 - 20) + 20 * (1000 - 300)
+    assert np.sum(lin_coeff.value == -np.array([80, 700])) == 2
 
 
-def test_contraint_values(projects, map_prj_id_index, map_wrk_id_index):
+def test_ineq_matrix(projects, map_prj_id_index, map_wrk_id_index):
     ineq_matrix = InequalityMatrixConstraint(
         projects=projects,
         map_project_id_index=map_prj_id_index,
         map_worker_id_index=map_wrk_id_index,
     )
-    constraint_f = ConstraintValues(constr_matrix=ineq_matrix)
-    assert np.sum(constraint_f.value(STRATEGY) == np.array([290, 50, 500])) == 3
-
-
-def test_constraint_checker(projects, workers, map_prj_id_index, map_wrk_id_index):
-    ineq_matrix = InequalityMatrixConstraint(
-        projects=projects,
-        map_project_id_index=map_prj_id_index,
-        map_worker_id_index=map_wrk_id_index,
+    assert (
+        np.sum(ineq_matrix.value == np.array([[3, 13], [5, 0], [0, 25]]))
+        == ineq_matrix.value.shape[0] * ineq_matrix.value.shape[1]
     )
-    constraint_f = ConstraintValues(constr_matrix=ineq_matrix)
+
+
+def test_ineq_constraint_vector(workers, map_wrk_id_index):
     ineq_vec = InequalityVectorConstraint(
         workers=workers, map_worker_id_index=map_wrk_id_index
     )
-    cons_checker = ConstraintChecker(constr_value=constraint_f, constr_target=ineq_vec)
-    assert cons_checker.value(STRATEGY) == False
-    assert cons_checker.value(np.array([0.0, 0.0])) == True
-    assert cons_checker.value(np.array([1.0, 0.0])) == True
+    assert np.sum(ineq_vec.value == np.array([20, 30, 10])) == 3

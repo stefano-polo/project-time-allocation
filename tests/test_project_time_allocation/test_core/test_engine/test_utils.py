@@ -1,5 +1,3 @@
-import pytest
-
 from project_time_allocation.core.engine.utils import dict_from_lists
 
 

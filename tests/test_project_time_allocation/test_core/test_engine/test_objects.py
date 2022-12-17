@@ -1,32 +1,43 @@
 from project_time_allocation.core.engine.objects import Project, Worker
+from pytest import fixture
 
 
-def test_project():
-
-    proj = Project(
-        project_id="11",
-        project_name="project",
-        return_value=1230.2,
-        cost_value=100,
-        workers_id_hours={"123": 10, "124": 20},
+@fixture(name="project_alpha", scope="module")
+def fixture_project_alpha():
+    return Project(
+        project_id="123",
+        project_name="alpha",
+        return_value=100,
+        cost_value=20,
+        workers_id_hours={"001": {"number_hours": 3}, "002": {"number_hours": 5}},
     )
-    assert proj.cost == 100
-    assert proj.name == "project"
-    assert proj.project_id == "11"
-    assert proj.worker_id_hours == {"123": 10, "124": 20}
-    assert proj.return_value == 1230.2
 
 
-def test_worker():
-    worker = Worker(
-        worker_id="123",
-        worker_division="Senior",
-        number_workers=10,
-        total_hour_per_worker_per_year=120,
-        cost_per_worker_per_hour=11,
+@fixture(name="junior", scope="module")
+def fixture_junior_worker():
+    return Worker(
+        worker_id="002",
+        worker_division="junior",
+        number_workers=3,
+        total_hour_per_worker_per_year=10,
+        cost_per_worker_per_hour=4,
     )
-    assert worker.worker_id == "123"
-    assert worker.name == "Senior"
-    assert worker.number_workers == 10
-    assert worker.total_available_hour == 1200
-    assert worker.cost == 11
+
+
+def test_project(project_alpha):
+    assert project_alpha.cost == 20
+    assert project_alpha.name == "alpha"
+    assert project_alpha.project_id == "123"
+    assert project_alpha.worker_id_hours == {
+        "001": {"number_hours": 3},
+        "002": {"number_hours": 5},
+    }
+    assert project_alpha.return_value == 100
+
+
+def test_worker(junior):
+    assert junior.worker_id == "002"
+    assert junior.name == "junior"
+    assert junior.number_workers == 3
+    assert junior.total_available_hour == 30
+    assert junior.cost == 4
