@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "project-time-allocation"
+version = "0.1.0"
+description = "Engine for project time allocation"
+authors = ["Stefano Polo <sp.stefano.polo@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+numpy = "^1.23.5"
+scipy = "^1.9.3"
+pydantic = "^1.10.2"
+
+[tool.poetry.dev-dependencies]
+black = "^22.10.0"
+isort = "^5.10.1"
+pylint = "^2.15.7"
+pytest = "^7.2.0"
+pytest-cov = "^4.0.0"
+mypy = "^0.991"
+
+[tool.poetry.group.dev.dependencies]
+autoflake = "^2.2.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
