@@ -1,5 +1,6 @@
-from project_time_allocation.core.engine.objects import Project, Worker
 from pytest import fixture
+
+from project_time_allocation.core.engine.objects import Project, Worker
 
 
 @fixture(name="project_alpha", scope="module")

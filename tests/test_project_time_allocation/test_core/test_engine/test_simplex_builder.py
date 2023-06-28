@@ -1,5 +1,5 @@
-from pytest import fixture
 import numpy as np
+from pytest import fixture
 
 from project_time_allocation.core.engine.objects import Project, Worker
 from project_time_allocation.core.engine.simplex_builder import (
