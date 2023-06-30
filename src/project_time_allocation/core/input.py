@@ -1,7 +1,9 @@
 import os
+import pydantic
+import pandas as pd
 from csv import DictReader
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from project_time_allocation.core.engine.objects import Worker
 from project_time_allocation.core.schemas.project import (
@@ -12,6 +14,33 @@ from project_time_allocation.core.schemas.project import (
 from project_time_allocation.core.schemas.worker import WorkerSchema
 
 
+def validate_project_return_sheet(
+        df: pd.DataFrame,
+        index_offset: int = 2
+) -> Tuple[Dict[str, Dict[str, Union[int, str, float]]], List]:
+    df_dict_rows = df.to_dict(orient="index")
+    projects_dict = {}
+    bad_data = []
+    for index, row in enumerate(df_dict_rows):
+        try:
+            pd_line_dict = (ProjectReturnSchema.parse_obj(df_dict_rows[row])).dict()
+            projects_dict.update(
+                {
+                    pd_line_dict["project_id"]: {
+                        k: pd_line_dict[k]
+                        for k in set(list(pd_line_dict.keys())) - set(["project_id"])
+                    }
+                }
+            )
+        except pydantic.ValidationError as e:
+            # Adds all validation error messages associated with the error
+            # and adds them to the dictionary
+            row['Errors'] = [error_message['msg'] for error_message in e.errors()]
+
+            row['Error_row_num'] = index + index_offset
+            bad_data.append(row)  #appends bad data to a different list of dictionaries
+    return (projects_dict, bad_data)
+
 def load_project_return_file(
     file_name: str, folder_name: Optional[Path] = None
 ) -> Dict[str, Dict[str, Union[int, str, float]]]:
@@ -21,7 +50,8 @@ def load_project_return_file(
         path = Path(file_name)
     if not os.path.exists(path):
         raise Exception(f"The input file {path.resolve()} does not exists!")
-
+    df = pd.read_csv(path)
+    validate_project_return_sheet(df)
     projects_dict = {}
     with path.open("r") as file:
         reader = DictReader(file, dialect=ProjectReturnDialect())
