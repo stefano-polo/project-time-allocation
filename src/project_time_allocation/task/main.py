@@ -15,19 +15,13 @@ from project_time_allocation.core.engine.simplex_builder import (
     LinearCoefficients,
 )
 from project_time_allocation.core.engine.utils import dict_from_lists
-from project_time_allocation.core.input import (
-    load_project_hour_file,
-    load_project_return_file,
-    load_worker_file,
-)
+from project_time_allocation.core.input import load_worker_file
 from project_time_allocation.core.service.service import ProjectBuildService
 
 
 def main():
     local_folder_name = "data"
     path = Path(os.path.dirname(__file__)).joinpath(local_folder_name)
-    project_return_dict = load_project_return_file("project_return.csv", path)
-    project_hour_dict = load_project_hour_file("project_hours.csv", path)
     workers_dict = load_worker_file("workers.csv", path)
     projects = ProjectBuildService().build_projects(
         project_return_dict=project_return_dict,

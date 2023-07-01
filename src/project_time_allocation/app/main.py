@@ -1,13 +1,11 @@
-import streamlit as st
-import pandas as pd
+import operator
+
 import numpy as np
+import pandas as pd
+import plotly.express as px
+import streamlit as st
 
 from project_time_allocation.app.utils import upload_data
-import os
-from pathlib import Path
-
-import numpy as np
-
 from project_time_allocation.core.engine.loss import (
     ConstraintChecker,
     ConstraintValues,
@@ -21,31 +19,25 @@ from project_time_allocation.core.engine.simplex_builder import (
 )
 from project_time_allocation.core.engine.utils import dict_from_lists
 from project_time_allocation.core.input import (
-    load_project_hour_file,
-    load_project_return_file,
-    load_worker_file,
+    validate_project_hour_sheet,
+    validate_project_return_sheet,
+    validate_worker_sheet,
 )
 from project_time_allocation.core.service.service import ProjectBuildService
 
-st.title('Project Time Allocation Optimizer')
+st.title("Project Allocation Strategy Optimizer 📈")
 
-uploaded_file_1 = st.file_uploader("Upload Workers input CSV file", type="csv")
-project_return_dict = None
-if uploaded_file_1:
-    project_return_dict = load_project_return_file(uploaded_file_1)
+uploaded_file = st.file_uploader("Upload Xlsx File for with Inputs", type="xlsx")
+if uploaded_file:
+    workers_df, project_work_specifics_df, project_returns_df = upload_data(
+        uploaded_file
+    )
+    project_return_dict, bad_lines = validate_project_return_sheet(project_returns_df)
+    project_hour_dict, bad_lines = validate_project_hour_sheet(
+        project_work_specifics_df
+    )
+    workers_dict, bad_lines = validate_worker_sheet(workers_df)
 
-uploaded_file_2 = st.file_uploader("Upload project hour input CSV file", type="csv")
-project_hour_dict = None
-if uploaded_file_2:
-    project_hour_dict = load_project_hour_file(uploaded_file_2)
-
-
-uploaded_file_3 = st.file_uploader("Upload workers input CSV file", type="csv")
-workers_dict = None
-if uploaded_file_3:
-    workers_dict = load_worker_file(uploaded_file_3)
-
-if (workers_dict is not None) & (project_hour_dict is not None) & (project_hour_dict is not None):
     projects = ProjectBuildService().build_projects(
         project_return_dict=project_return_dict,
         project_hour_dict=project_hour_dict,
@@ -74,23 +66,38 @@ if (workers_dict is not None) & (project_hour_dict is not None) & (project_hour_
     )
 
     res = Optimizer(linear_coeff, matrix, ineq_vec).run()
-    print("Optimal Allocation Strategy:")
-    for project_id in projects.keys():
-        print(projects[project_id].name, ": ", res[projects_map[project_id]])
-
-    print("Total Earning:", neg_loss.value(res), "euros")
-    if constraint_checker.value(res):
-        print("\nTime Constraint Passed!")
-    else:
-        raise ValueError("Time Constratint is not satisfied")
-
-    print("\nResidual Hours")
-    busy_hours = constraint.value(res)
-    for worker_id in workers_dict:
-        print(
-            workers_dict[worker_id].name,
-            ":",
-            workers_dict[worker_id].total_available_hour
-            - busy_hours[workers_map[worker_id]],
-            " hours",
+    st.subheader("Optimal Allocation Strategy:")
+    if not constraint_checker.value(res):
+        st.markdown(
+            "<span style='color:red'> ** WARNING: the following solution is not optimal: the time constraints is not satisfied!**</span>",
+            unsafe_allow_html=True,
         )
+    st.markdown(
+        "<span style='color:green'> **💰 Potential Earning from this Strategy: {:,}**</span>".format(
+            neg_loss.value(res)
+        ),
+        unsafe_allow_html=True,
+    )
+    result_map = {projects[key].name: res[projects_map[key]] for key in projects.keys()}
+    result_map = dict(
+        sorted(result_map.items(), key=operator.itemgetter(1), reverse=True)
+    )
+    df = pd.DataFrame(result_map.items(), columns=["Project", "Numbers"])
+    st.dataframe(df, hide_index=True, width=800)
+    fig = px.pie(df, values="Numbers", names="Project")
+    st.plotly_chart(fig, theme=None, use_container_width=True)
+
+    st.subheader("Residual Hours")
+    busy_hours = constraint.value(res)
+    residual_hours_dict = {
+        workers_dict[worker_id].name: workers_dict[worker_id].total_available_hour
+        - busy_hours[workers_map[worker_id]]
+        for worker_id in workers_dict.keys()
+    }
+    residual_hours_dict = dict(
+        sorted(residual_hours_dict.items(), key=operator.itemgetter(1), reverse=True)
+    )
+    df = pd.DataFrame(
+        residual_hours_dict.items(), columns=["Worker Type", "Residual Hours"]
+    )
+    st.dataframe(df, hide_index=True, width=800)

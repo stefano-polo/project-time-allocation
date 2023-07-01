@@ -1,9 +1,10 @@
 import os
-import pydantic
-import pandas as pd
 from csv import DictReader
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import pandas as pd
+import pydantic
 
 from project_time_allocation.core.engine.objects import Worker
 from project_time_allocation.core.schemas.project import (
@@ -15,9 +16,8 @@ from project_time_allocation.core.schemas.worker import WorkerSchema
 
 
 def validate_project_return_sheet(
-        df: pd.DataFrame,
-        index_offset: int = 2
-) -> Tuple[Dict[str, Dict[str, Union[int, str, float]]], List]:
+    df: pd.DataFrame, index_offset: int = 2
+) -> Tuple[Dict[str, Dict[str, Any]], List[Any]]:
     df_dict_rows = df.to_dict(orient="index")
     projects_dict = {}
     bad_data = []
@@ -35,54 +35,22 @@ def validate_project_return_sheet(
         except pydantic.ValidationError as e:
             # Adds all validation error messages associated with the error
             # and adds them to the dictionary
-            row['Errors'] = [error_message['msg'] for error_message in e.errors()]
+            row["Errors"] = [error_message["msg"] for error_message in e.errors()]
 
-            row['Error_row_num'] = index + index_offset
-            bad_data.append(row)  #appends bad data to a different list of dictionaries
+            row["Error_row_num"] = index + index_offset
+            bad_data.append(row)  # appends bad data to a different list of dictionaries
     return (projects_dict, bad_data)
 
-def load_project_return_file(
-    file_name: str, folder_name: Optional[Path] = None
-) -> Dict[str, Dict[str, Union[int, str, float]]]:
-    if folder_name is not None:
-        path = folder_name.joinpath(folder_name).joinpath(file_name)
-    else:
-        path = Path(file_name)
-    if not os.path.exists(path):
-        raise Exception(f"The input file {path.resolve()} does not exists!")
-    df = pd.read_csv(path)
-    validate_project_return_sheet(df)
-    projects_dict = {}
-    with path.open("r") as file:
-        reader = DictReader(file, dialect=ProjectReturnDialect())
-        for row in reader:
-            pd_line_dict = (ProjectReturnSchema.parse_obj(row)).dict()
-            projects_dict.update(
-                {
-                    pd_line_dict["project_id"]: {
-                        k: pd_line_dict[k]
-                        for k in set(list(pd_line_dict.keys())) - set(["project_id"])
-                    }
-                }
-            )
-    return projects_dict
 
-
-def load_project_hour_file(
-    file_name: str, folder_name: Optional[Path] = None
-) -> Dict[str, List[Dict[str, Dict[str, Union[int, str]]]]]:
-    if folder_name is not None:
-        path = folder_name.joinpath(folder_name).joinpath(file_name)
-    else:
-        path = Path(file_name)
-    if not os.path.exists(path):
-        raise Exception(f"The input file {path.resolve()} does not exists!")
-
+def validate_project_hour_sheet(
+    df: pd.DataFrame, index_offset: int = 2
+) -> Tuple[Dict[str, List[Dict[str, Dict[str, Any]]]], List[Any]]:
+    df_dict_rows = df.to_dict(orient="index")
     projects_hour_dict = {}
-    with path.open("r") as file:
-        reader = DictReader(file, dialect=ProjectReturnDialect())
-        for row in reader:
-            pd_line_dict = (ProjectHourSchema.parse_obj(row)).dict()
+    bad_data = []
+    for index, row in enumerate(df_dict_rows):
+        try:
+            pd_line_dict = (ProjectHourSchema.parse_obj(df_dict_rows[row])).dict()
             worker_id_dict = {
                 pd_line_dict["worker_id"]: {
                     k: pd_line_dict[k]
@@ -94,24 +62,25 @@ def load_project_hour_file(
                 projects_hour_dict[pd_line_dict["project_id"]] = [worker_id_dict]
             else:
                 projects_hour_dict[pd_line_dict["project_id"]].append(worker_id_dict)
-    return projects_hour_dict
+        except pydantic.ValidationError as e:
+            # Adds all validation error messages associated with the error
+            # and adds them to the dictionary
+            row["Errors"] = [error_message["msg"] for error_message in e.errors()]
+
+            row["Error_row_num"] = index + index_offset
+            bad_data.append(row)  # appends bad data to a different list of dictionaries
+    return (projects_hour_dict, bad_data)
 
 
-def load_worker_file(
-    file_name: str, folder_name: Optional[Path] = None
-) -> Dict[str, Worker]:
-    if folder_name is not None:
-        path = folder_name.joinpath(folder_name).joinpath(file_name)
-    else:
-        path = Path(file_name)
-    if not os.path.exists(path):
-        raise Exception(f"The input file {path.resolve()} does not exists!")
-
+def validate_worker_sheet(
+    df: pd.DataFrame, index_offset: int = 2
+) -> Tuple[Dict[str, Worker], List[Any]]:
+    df_dict_rows = df.to_dict(orient="index")
     workers_dict = {}
-    with path.open("r") as file:
-        reader = DictReader(file, dialect=ProjectReturnDialect())
-        for row in reader:
-            pd_line_dict = (WorkerSchema.parse_obj(row)).dict()
+    bad_data = []
+    for index, row in enumerate(df_dict_rows):
+        try:
+            pd_line_dict = (WorkerSchema.parse_obj(df_dict_rows[row])).dict()
             workers_dict.update(
                 {
                     pd_line_dict["worker_id"]: Worker(
@@ -127,4 +96,11 @@ def load_worker_file(
                     )
                 }
             )
-    return workers_dict
+        except pydantic.ValidationError as e:
+            # Adds all validation error messages associated with the error
+            # and adds them to the dictionary
+            row["Errors"] = [error_message["msg"] for error_message in e.errors()]
+
+            row["Error_row_num"] = index + index_offset
+            bad_data.append(row)  # appends bad data to a different list of dictionaries
+    return (workers_dict, bad_data)
