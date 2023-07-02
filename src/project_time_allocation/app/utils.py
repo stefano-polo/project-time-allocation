@@ -1,7 +1,7 @@
-import os
-from pathlib import Path
+from typing import Tuple
 
 import numpy as np
+import pandas as pd
 
 from project_time_allocation.core.engine.loss import (
     ConstraintChecker,
@@ -16,19 +16,32 @@ from project_time_allocation.core.engine.simplex_builder import (
 )
 from project_time_allocation.core.engine.utils import dict_from_lists
 from project_time_allocation.core.input import (
-    load_project_hour_file,
-    load_project_return_file,
-    load_worker_file,
+    validate_project_hour_sheet,
+    validate_project_return_sheet,
+    validate_worker_sheet,
 )
 from project_time_allocation.core.service.service import ProjectBuildService
 
 
-def main():
-    local_folder_name = "data"
-    path = Path(os.path.dirname(__file__)).joinpath(local_folder_name)
-    project_return_dict = load_project_return_file("project_return.csv", path)
-    project_hour_dict = load_project_hour_file("project_hours.csv", path)
-    workers_dict = load_worker_file("workers.csv", path)
+def upload_data(uploaded_file: str) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    xls = pd.ExcelFile(uploaded_file)
+    workers_df = pd.read_excel(xls, "workers")
+    project_work_specifics_df = pd.read_excel(xls, "project_work_specifics")
+    project_returns_df = pd.read_excel(xls, "project_returns")
+    return workers_df, project_work_specifics_df, project_returns_df
+
+
+def run_engine(
+    project_returns_df: pd.DataFrame,
+    project_work_specifics_df: pd.DataFrame,
+    workers_df: pd.DataFrame,
+) -> Tuple:
+    project_return_dict, bad_lines = validate_project_return_sheet(project_returns_df)
+    project_hour_dict, bad_lines = validate_project_hour_sheet(
+        project_work_specifics_df
+    )
+    workers_dict, bad_lines = validate_worker_sheet(workers_df)
+
     projects = ProjectBuildService().build_projects(
         project_return_dict=project_return_dict,
         project_hour_dict=project_hour_dict,
@@ -56,28 +69,15 @@ def main():
         constr_value=constraint, constr_target=ineq_vec
     )
 
-    res = Optimizer(linear_coeff, matrix, ineq_vec).run()
-    print("Optimal Allocation Strategy:")
-    for project_id in projects.keys():
-        print(projects[project_id].name, ": ", res[projects_map[project_id]])
+    result = Optimizer(linear_coeff, matrix, ineq_vec).run()
 
-    print("Total Earning:", neg_loss.value(res), "euros")
-    if constraint_checker.value(res):
-        print("\nTime Constraint Passed!")
-    else:
-        raise ValueError("Time Constratint is not satisfied")
-
-    print("\nResidual Hours")
-    busy_hours = constraint.value(res)
-    for worker_id in workers_dict:
-        print(
-            workers_dict[worker_id].name,
-            ":",
-            workers_dict[worker_id].total_available_hour
-            - busy_hours[workers_map[worker_id]],
-            " hours",
-        )
-
-
-if __name__ == "__main__":
-    main()
+    return (
+        result,
+        constraint,
+        constraint_checker,
+        neg_loss,
+        projects,
+        projects_map,
+        workers_dict,
+        workers_map,
+    )

@@ -131,3 +131,5 @@ dmypy.json
 #pytest files
 coverage.xml
 pytest-xunit.xml
+
+.vscode
