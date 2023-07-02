@@ -19,7 +19,7 @@ Experience the benefits of streamlined project allocation and unleash the full p
 st.markdown(
     """### Usage ⚙️
 The web application gets in input just an excel file composed by three sheets:
-- **workers**: this sheet must contains the info of the available resources (number, hours and cost per resource per hour); the table must be 
+- **workers**: this sheet must contains the info of the available resources (number, hours and cost per resource per hour); the table should follow this pattern
 """,
     unsafe_allow_html=True,
 )
@@ -34,7 +34,7 @@ worker_sheet = pd.DataFrame(worker_sheet)
 st.dataframe(worker_sheet, hide_index=True)
 
 st.markdown(
-    """- **project_returns**: this sheet must contains the returns of each projects; the table must be 
+    """- **project_returns**: this sheet must contains the returns of each projects; the table should follow this pattern 
 """,
     unsafe_allow_html=True,
 )
@@ -47,7 +47,7 @@ project_return_sheet = pd.DataFrame(project_return_sheet)
 st.dataframe(project_return_sheet, hide_index=True)
 
 st.markdown(
-    """- **project_work_specifics**: this sheet links each project with the required resources hours to complete it (be careful to use the same ids used in the previous sheets); the table must be 
+    """- **project_work_specifics**: this sheet links each project with the required resources hours to complete it (be careful to use the same ids used in the previous sheets); the table should follow this pattern
 """,
     unsafe_allow_html=True,
 )

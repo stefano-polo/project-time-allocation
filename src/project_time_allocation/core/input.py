@@ -1,7 +1,4 @@
-import os
-from csv import DictReader
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Tuple
 
 import pandas as pd
 import pydantic
@@ -9,7 +6,6 @@ import pydantic
 from project_time_allocation.core.engine.objects import Worker
 from project_time_allocation.core.schemas.project import (
     ProjectHourSchema,
-    ProjectReturnDialect,
     ProjectReturnSchema,
 )
 from project_time_allocation.core.schemas.worker import WorkerSchema

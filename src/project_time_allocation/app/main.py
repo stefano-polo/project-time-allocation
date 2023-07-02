@@ -34,7 +34,7 @@ def main():
                 unsafe_allow_html=True,
             )
         st.markdown(
-            "<span style='color:green'> **💰 Potential Earning from this Strategy: {:,}**</span>".format(
+            "<span style='color:green'> **💰 Strategy Profit: {:,}**</span>".format(
                 neg_loss.value(res)
             ),
             unsafe_allow_html=True,
