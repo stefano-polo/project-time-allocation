@@ -11,7 +11,7 @@ def main():
     st.title("Project Allocation Strategy Optimizer 📈")
     st.write("\n\n")
 
-    uploaded_file = st.file_uploader("📝 Upload Xlsx File for with Inputs", type="xlsx")
+    uploaded_file = st.file_uploader("📝 Upload Xlsx File with Inputs", type="xlsx")
     if uploaded_file:
         workers_df, project_work_specifics_df, project_returns_df = upload_data(
             uploaded_file
