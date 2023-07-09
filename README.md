@@ -1,6 +1,6 @@
 # Project Allocation Strategy Optimizer 📈
 [![python](https://img.shields.io/badge/Python-3.8-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org)
-![Tests](https://github.com/RobertoCorti/gptravel/actions/workflows/python-tests.yml/badge.svg)
+![Tests](https://github.com/stefano-polo/project_allocation_strategy/actions/workflows/python-tests.yml/badge.svg)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.22.0-FF4B4B.svg?style=flat&logo=Streamlit&logoColor=white)](https://streamlit.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
