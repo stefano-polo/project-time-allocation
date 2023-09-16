@@ -5,11 +5,8 @@
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.22.0-FF4B4B.svg?style=flat&logo=Streamlit&logoColor=white)](https://streamlit.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-This repo aims to provide a tool for efficient project management and optimized project allocation strategies. 
-
-The engine leverages the renowned Simplex method, a widely adopted mathematical optimization technique for linear programming problems.
-
-With the Simplex method at its core, the tool will identify the ideal portfolio of projects based on several key factors, such as available resources, project costs, and expected returns. This will enable the user to make informed decisions and prioritize projects that will yield the best outcomes given your constraints.
+This repository aims to provide a powerful tool designed for efficient project management and optimized project allocation strategies. The core engine leverages the renowned Simplex method, a widely adopted mathematical optimization technique for linear programming problems.
+With the Simplex method at its core, the application excels at identifying the ideal portfolio of projects based on several key factors, such as available resources, project costs, and expected returns. This enables the final user to make informed decisions and prioritize projects that will yield the best outcomes given her constraints.
 
 ## Installation ⚙️
 
@@ -31,6 +28,8 @@ poetry shell
 ```
 
 ## Usage 🚀
+The application is available on [Streamlit Cloud](https://project-allocation-strategy.streamlit.app/).
+
 To run the web app on your local machine, use the following command:
 ```
 streamlit run src/project_time_allocation/app/Home.py
